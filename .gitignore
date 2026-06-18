@@ -1,0 +1,14 @@
+# Gowin EDA
+*.fs
+*.rpt
+*.log
+impl/
+
+# ModelSim
+work/
+*.wlf
+transcript
+
+# OS
+.DS_Store
+Thumbs.db
