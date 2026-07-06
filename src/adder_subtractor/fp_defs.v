@@ -1,3 +1,25 @@
+//==============================================================================
+// File      : fp_defs.v
+// Project   : IEEE-754 Single-Precision Floating-Point Unit
+// Author    : wis
+// Description:
+//   Common parameter definitions shared by all floating-point modules.
+//   These constants define the IEEE-754 single-precision data format.
+//==============================================================================
+
+`ifndef FP_DEFS_V
+`define FP_DEFS_V
+
+//------------------------------------------------------------------------------
+// IEEE-754 Single-Precision Format
+//------------------------------------------------------------------------------
+`define FP_WIDTH      32      // Total floating-point width
+`define EXP_WIDTH      8      // Exponent field width
+`define FRAC_WIDTH    23      // Fraction (stored mantissa) width
+`define MANT_WIDTH    24      // Mantissa width including hidden bit
+`define EXP_BIAS     127      // Exponent bias
+
+`endif
 /*
 ----32 Bit Float----
 Bits 0:22 - Mantissa
