@@ -6,39 +6,25 @@
 //   Common parameter definitions shared by all floating-point modules.
 //   These constants define the IEEE-754 single-precision data format.
 //==============================================================================
-
-`ifndef FP_DEFS_V
-`define FP_DEFS_V
-
-//------------------------------------------------------------------------------
-// IEEE-754 Single-Precision Format
-//------------------------------------------------------------------------------
-`define FP_WIDTH      32      // Total floating-point width
-`define EXP_WIDTH      8      // Exponent field width
-`define FRAC_WIDTH    23      // Fraction (stored mantissa) width
-`define MANT_WIDTH    24      // Mantissa width including hidden bit
-`define EXP_BIAS     127      // Exponent bias
-
-`endif
-/*
-----32 Bit Float----
-Bits 0:22 - Mantissa
-Bits 23:30 - Exponent
-Bits 31 - sign bit
-*/
-
-/*
-----IEEE-754 Encodings---- 
-Exponent    Fraction    Object
-    0           0       zero
-    0        non-zero   denormalised number
-  1-254     anything    floating point
-   255          0       infinity
-   255       non-zero   NaN (Not a Number)
-*/
-
-
-/*
-Value of Float = (-1)^S x (1+fraction) x 2^(exponent-bias)
-S-sign bit ; fraction - mantissa(without implicit one) ; bias - 127 
-*/
+// +-----------+---------------------+---------------------------------------+
+// | Sign (1b) |    Exponent (8b)    |             Fraction (23b)            |
+// |  Bit [31] |    Bits [30:23]     |              Bits [22:0]              |
+// +-----------+---------------------+---------------------------------------+
+//
+// 1. SIGN BIT (Bit 31):
+//    - 1'b0 = Positive (+)
+//    - 1'b1 = Negative (-)
+//
+// 2. EXPONENT FIELD (Bits 30:23):
+//    - Width: 8 bits (Bias = 127)
+//    - All 0s (8'h00) = Used for Zero (0) or Denormal numbers.
+//    - All 1s (8'hFF) = Used for Infinity (Inf) or Not-a-Number (NaN).
+//
+// 3. FRACTION FIELD (Bits 22:0):
+//    - Width: 23 bits (Does not include the implicit/hidden leading bit '1').
+//
+// 4. IEEE-754 SPECIAL CASES SUMMARY:
+//    - Zero (±0)      : Exponent == 8'h00 and Fraction == 23'h0
+//    - Infinity (±Inf): Exponent == 8'hFF and Fraction == 23'h0
+//    - NaN (e.g. QNaN): Exponent == 8'hFF and Fraction != 23'h0
+//    - Default QNaN   : 32'h7FC00000
