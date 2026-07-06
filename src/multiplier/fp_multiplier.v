@@ -50,24 +50,14 @@ module fp_multiplier(
     wire [31:0] normal_result;
 
 
-    // Unpack A
-    unpack unpack_A(
-        .in(A),
+    // Unpack
+    assign sign_A     = A[31];
+    assign exponent_A = A[30:23];
+    assign fraction_A = A[22:0];
 
-        .sign(sign_A),
-        .exponent(exponent_A),
-        .fraction(fraction_A)
-    );
-
-
-    // Unpack B
-    unpack unpack_B(
-        .in(B),
-
-        .sign(sign_B),
-        .exponent(exponent_B),
-        .fraction(fraction_B)
-    );
+    assign sign_B     = B[31];
+    assign exponent_B = B[30:23];
+    assign fraction_B = B[22:0];
 
 
     // Speacial case detect
