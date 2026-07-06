@@ -1,3 +1,13 @@
+//==============================================================================
+// Module : align
+// Function:
+//   - Compare operand magnitudes
+//   - Swap operands
+//   - Restore hidden bits
+//   - Align mantissas
+//   - Generate Guard, Round and Sticky bits
+//==============================================================================
+
 module align (
     input  [31:0] A,
     input  [31:0] B,
