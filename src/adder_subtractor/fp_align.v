@@ -14,7 +14,7 @@ module fp_align (
 
     output        A_sign,
     output        B_sign,
-    output [7:0]  exponent,
+    output [8:0]  exponent,
     output [23:0] A_mantissa_ext,
     output [23:0] B_mantissa_shifted,
 
@@ -41,7 +41,7 @@ wire [31:0] min_val = comp ? B : A;
 // Extract sign and use the larger exponent as the base exponent
 assign A_sign = max_val[31];
 assign B_sign = min_val[31];
-assign exponent = max_val[30:23];
+assign exponent = {1'b0,max_val[30:23] };
 
 
 // Restore the hidden bit
