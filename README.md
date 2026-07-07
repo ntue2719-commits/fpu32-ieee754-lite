@@ -84,8 +84,12 @@ Special-case handling (NaN, Infinity, Zero, etc.) is kept out of the core datapa
 The FPU consists of two independent arithmetic units — a floating-point adder-subtractor and a floating-point multiplier — both built on the shared rounding and packing modules, integrated through `fpu_top.v`.
 
 ### Adder-Subtractor Pipeline
+
+<details>
+<summary>View Architecture Diagram</summary>
+
 <p align="center">
-  <img src="doc/images/Architecture_adder_subtracter_unit.png" width="900">
+  <img src="doc/images/Architecture_adder_subtracter_unit.png" width="300">
 </p>
 
 ```text
@@ -120,8 +124,11 @@ Result
 ```
 
 ### Multiplier Pipeline
+<details>
+<summary>View Architecture Diagram</summary>
+
 <p align="center">
-  <img src="doc/images/Architecture_multiplier_unit.png" width="900">
+  <img src="doc/images/Architecture_multiplier_unit.png" width="300">
 </p>
 
 ```text
