@@ -15,7 +15,16 @@ This project supports:
 This project is developed as part of an academic digital design course.
 
 ---
+# Table of Contents
 
+- [IEEE754 Single Precision Format](#ieee754-single-precision-format)
+- [Architecture](#architecture)
+- [Module Index](#module-index)
+- [Repository Organization](#repository-organization)
+- [FPGA Pipeline Evaluation](#fpga-pipeline-evaluation)
+- [Team Members](#team-members)
+
+---
 ## IEEE754 Single Precision Format
 
 The project follows the IEEE754 Single Precision (32-bit) floating-point format.
@@ -142,6 +151,101 @@ Result
 
 ---
 
+# Module Index
+
+The FPU is organized into three categories: top-level modules, operation-specific modules (adder/subtractor and multiplier), and reusable common modules.
+
+## Top-Level Modules
+
+| Module | Description |
+|---------|-------------|
+| `fpu_top.v` | Top-level FPU integrating the adder-subtractor and multiplier units |
+| `fpu_add_sub.v` | Top-level IEEE-754 floating-point adder-subtractor |
+| `fpu_mul.v` | Top-level IEEE-754 floating-point multiplier |
+
+---
+
+## Adder-Subtractor Modules
+
+| Module | Function |
+|---------|----------|
+| `fp_special_case_add_sub.v` | Detect and handle IEEE-754 special cases (NaN, Infinity, Zero, etc.) |
+| `fp_compare_mag.v` | Compare operand magnitudes to determine alignment and subtraction order |
+| `fp_align.v` | Restore hidden bits and align mantissas according to exponent difference |
+| `fp_add_sub_core.v` | Perform mantissa addition or subtraction |
+| `fp_lzd.v` | Leading Zero Detector for cancellation after subtraction |
+| `fp_normalize_add.v` | Normalize the mantissa and update the exponent |
+
+---
+
+## Multiplier Modules
+
+| Module | Function |
+|---------|----------|
+| `fp_special_case_mul.v` | Detect and handle multiplication-specific IEEE-754 special cases |
+| `fp_mul_exp.v` | Calculate the output exponent |
+| `fp_mul_mantissa.v` | Multiply the two mantissas |
+| `fp_normalize_mul.v` | Normalize the multiplication result |
+
+---
+
+## Common (Reusable) Modules
+
+| Module | Function |
+|---------|----------|
+| `fp_round_trunc.v` | Perform mantissa truncation after normalization (shared by both datapaths) |
+| `fp_pack.v` | Pack sign, exponent, and mantissa into IEEE-754 single-precision format (shared by both datapaths) |
+
+---
+
+## Repository Organization
+
+To evaluate the impact of pipelining, both the adder-subtractor and multiplier are organized into three implementation variants:
+
+- **Non_pipeline_top** — baseline implementation
+- **2_stage_pipeline_top** — two-stage pipelined implementation
+- **3_stage_pipeline_top** — three-stage pipelined implementation
+
+The pipeline stages are separated into Stage 1 and Stage 2 directories for modular development, while the final stage (`Stage 3_common`) contains the shared modules (`fp_round_trunc.v` and `fp_pack.v`) reused by both arithmetic units.
+
+```text
+src/
+├── adder_subtractor/
+│   ├── Non_pipeline_top/
+│   ├── 2_stage_pipeline_top/
+│   ├── 3_stage_pipeline_top/
+│   │
+│   ├── Stage 1/
+│   │   ├── fp_special_case_add_sub.v
+│   │   ├── fp_compare_mag.v
+│   │   └── fp_align.v
+│   │
+│   └── Stage 2/
+│       ├── fp_add_sub_core.v
+│       ├── fp_lzd.v
+│       └── fp_normalize_add.v
+│
+├── multiplier/
+│   ├── Non_pipeline_top/
+│   ├── 2_stage_pipeline_top/
+│   ├── 3_stage_pipeline_top/
+│   │
+│   ├── Stage 1/
+│   │   ├── fp_special_case_mul.v
+│   │   └── fp_mul_exp.v
+│   │
+│   └── Stage 2/
+│       ├── fp_mul_mantissa.v
+│       └── fp_normalize_mul.v
+│
+├── Stage3_common/
+│   ├── fp_defs.v
+│   ├── fp_round_trunc.v
+│   └── fp_pack.v
+│
+└── fpu_top.v
+```
+---
 ## FPGA Pipeline Evaluation
 
 Both `fpu_add_sub.v` and `fpu_mul.v` are each synthesized in three pipeline configurations — Non-pipeline, 2-stage, and 3-stage — using the same methodology, so results can be compared side by side across both units.
@@ -164,43 +268,4 @@ Expected analysis points:
 - Overall throughput improves significantly with pipelining
 
 Each unit's RTL and pipeline structure remain independent (`fpu_add_sub.v` and `fpu_mul.v` are not merged into a single top module) — only the synthesis results are compared together here.
-
-## Project Structure
-
-```text
-src/
-├── common/
-│   ├── fp_round_trunc.v      ✅ Shared
-│   └── fp_pack.v             ✅ Shared
-│
-├── fpu_add_sub/
-│   ├── fp_compare_mag.v
-│   ├── fp_align.v
-│   ├── fp_add_sub_core.v
-│   ├── fp_lzd.v
-│   ├── fp_normalize_add.v
-│   ├── fp_special_case_add_sub.v
-│   └── fpu_add_sub.v
-│
-├── fpu_mul/
-│   ├── fp_mul_exp.v
-│   ├── fp_mul_mantissa.v
-│   ├── fp_normalize_mul.v
-│   ├── fp_special_case_mul.v
-│   └── fpu_mul.v
-│
-└── fpu_top.v
-```
-
----
-## Team Members
-
-| Full Name | Student ID | Responsibility |
-|------------|------------|----------------|
-| Nguyen Tri Tue | SE205019 | Floating-point adder-subtractor |
-| Tran Le Tien Dat | SE205121 | Floating-point adder-subtractor |
-| Le Nhat Nam | SE205267 | Floating-point multiplier |
-| Tong Tran Dang | SE204445 | Floating-point multiplier |
-| Ha Gia Bao | SE205134 | Floating-point adder-subtractor |
-
 ---
