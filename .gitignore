@@ -1,7 +1,6 @@
 # Gowin EDA
 *.fs
 *.rpt
-*.log
 impl/
 
 # ModelSim
