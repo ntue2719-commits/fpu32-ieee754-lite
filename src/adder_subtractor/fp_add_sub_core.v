@@ -1,4 +1,4 @@
-module add_sub (
+module fp_add_sub_core (
     input A_sign,
     input B_sign,
     input [23:0] A_mantissa,
