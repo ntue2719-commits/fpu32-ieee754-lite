@@ -124,8 +124,9 @@ Result
 
 
 <p align="center">
-  <img src="doc/images/Architecture_multiplier_unit.png" width="600">
+  <img src="doc/images/Architecture_multiplier_unit.png" width="900">
 </p>
+
 
 ```text
 A, B
