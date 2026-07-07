@@ -85,8 +85,6 @@ The FPU consists of two independent arithmetic units — a floating-point adder-
 
 ### Adder-Subtractor Pipeline
 
-<details>
-<summary>View Architecture Diagram</summary>
 
 <p align="center">
   <img src="doc/images/Architecture_adder_subtracter_unit.png" width="300">
