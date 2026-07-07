@@ -33,5 +33,4 @@ module fp_normalize_add_sub(
             exponent_norm = 8'b0;
         end
     end
-
 endmodule
