@@ -1,4 +1,4 @@
-module fp_add_sub_top_1(
+module fp_add_sub_top_2stage(
     input clk,
     input rst_n,
  
