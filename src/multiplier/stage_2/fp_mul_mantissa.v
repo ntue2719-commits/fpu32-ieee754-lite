@@ -1,4 +1,4 @@
-module mantissa_multiply(
+module fp_mul_mantissa(
     input [22:0] fraction_A,
     input [22:0] fraction_B,
 
