@@ -40,3 +40,13 @@ assign exponent = max_val[30:23];
 // Restore the hidden bit
 // Normalized number  : hidden bit = 1
 // Denormalized number: hidden bit = 0
+assign A_mantissa_ext = (max_val[30:23] == 8'd0) ? {1'b0, max_val[22:0]} : {1'b1, max_val[22:0]};
+
+wire [23:0] min_mantissa = (min_val[30:23] == 8'd0) ? {1'b0, min_val[22:0]} : {1'b1, min_val[22:0]};
+
+// Align mantissas by right shifting the operand with the smaller exponent
+wire [7:0] E_dif = max_val[30:23] - min_val[30:23];
+
+assign B_mantissa_shifted = (E_dif >= 8'd24) ? 24'd0 :(min_mantissa >> E_dif);
+
+endmodule
