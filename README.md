@@ -22,7 +22,6 @@ This project is developed as part of an academic digital design course.
 - [Module Index](#module-index)
 - [Repository Organization](#repository-organization)
 - [FPGA Pipeline Evaluation](#fpga-pipeline-evaluation)
-- [Team Members](#team-members)
 
 ---
 ## IEEE754 Single Precision Format
@@ -122,11 +121,10 @@ Result
 ```
 
 ### Multiplier Pipeline
-<details>
-<summary>View Architecture Diagram</summary>
+
 
 <p align="center">
-  <img src="doc/images/Architecture_multiplier_unit.png" width="300">
+  <img src="doc/images/Architecture_multiplier_unit.png" width="600">
 </p>
 
 ```text
