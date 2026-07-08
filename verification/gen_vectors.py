@@ -124,9 +124,14 @@ def fp_normalize_add_sub(sum_mantissa25, exponent, shift_left):
     if sum_mantissa25 == 0:
         return 0, 0
     if (sum_mantissa25 >> 24) & 1:  # carry-out
-        mantissa_norm = (sum_mantissa25 >> 1) & MASK23  # mantissa[23:1]
-        exponent_norm = exponent + 1 if exponent < 0xFF else 0xFF
-        return exponent_norm, mantissa_norm
+        # Carry-out: shift right by 1 bit, increment exponent by 1
+        if exponent == 0xFE or exponent == 0xFF:
+            # Exponent would reach/exceed 0xFF after +1 -> saturate to Infinity
+            return 0xFF, 0
+        else:
+            mantissa_norm = (sum_mantissa25 >> 1) & MASK23  # mantissa[23:1]
+            exponent_norm = exponent + 1
+            return exponent_norm, mantissa_norm
     if exponent > shift_left:
         mantissa_norm = (sum_mantissa25 << shift_left) & MASK23
         exponent_norm = exponent - shift_left
