@@ -1,38 +1,106 @@
-module fp_align (
-    input  [31:0] A,
-    input  [31:0] B,
-    output        A_sign,
-    output        B_sign,
-    output [7:0]  exponent,
-    output [23:0] A_mantissa_ext,
-    output [23:0] B_mantissa_shifted
+module fp_add_sub_top(
+    input [31:0] A,
+    input [31:0] B,
+    input op,
+    output reg [31:0] result
 );
 
-    // B? HO?C COMMENT ?O?N KH?I T?O FP_COMPARE C?:
-    // wire comp;
-    // fp_compare inst1 (
-    //     .A({1'b0, A[30:0]}),
-    //     .B({1'b0, B[30:0]}),
-    //     .result(comp)
-    // );
-    // wire [31:0] max_val = comp ? A : B;
-    // wire [31:0] min_val = comp ? B : A;
+    // Wire internal in fp_special_add_sub
+    wire special_valid;
+    wire [31:0] special_result;
 
-    // THAY B?NG LOGIC SO SÁNH EXPONENT TR?C TI?P D??I ?ÂY:
-    wire exp_A_greater = (A[30:23] > B[30:23]) || ((A[30:23] == B[30:23]) && (A[22:0] >= B[22:0]));
+    // Check special case
+    fp_special_case_add_sub inst (
+        .A(A), 
+        .B(B), 
+        .op(op), 
+        .special_valid(special_valid), 
+        .special_result(special_result)        
+    );
+   
+    wire [31:0] B_internal;
+    assign B_internal = (op) ? {~B[31], B[30:0]} : B;
 
-    wire [31:0] max_val = exp_A_greater ? A : B;
-    wire [31:0] min_val = exp_A_greater ? B : A;
+    // Wire internal in fp_align
+    wire A_sign;
+    wire B_sign;
+    wire [7:0] exponent;
+    wire [23:0] A_mantissa_ext;
+    wire [23:0] B_mantissa_shifted;
 
-    // Các ph?n bên d??i gi? nguyên y h?t code c? c?a b?n
-    assign A_sign = max_val[31];
-    assign B_sign = min_val[31]; 
-    assign exponent = max_val[30:23];
+    fp_align u_align (
+        .A(A), 
+        .B(B_internal), 
+        .A_sign(A_sign), 
+        .B_sign(B_sign), 
+        .exponent(exponent), 
+        .A_mantissa_ext(A_mantissa_ext),
+        .B_mantissa_shifted(B_mantissa_shifted)                   
+    );
 
-    assign A_mantissa_ext = (max_val[30:23] == 8'd0) ? {1'b0, max_val[22:0]} : {1'b1, max_val[22:0]};
-    wire [23:0] min_mantissa = (min_val[30:23] == 8'd0) ? {1'b0, min_val[22:0]} : {1'b1, min_val[22:0]};
+    // Wire internal in fp_add_sub_core
+    wire [24:0] sum_mantissa;
 
-    wire [7:0] E_dif = max_val[30:23] - min_val[30:23];
-    assign B_mantissa_shifted = (E_dif >= 8'd24) ? 24'd0 : (min_mantissa >> E_dif);
+    fp_add_sub_core u_add_sub (
+        .A_sign(A_sign),
+        .B_sign(B_sign),
+        .A_mantissa(A_mantissa_ext),
+        .B_mantissa(B_mantissa_shifted),
+        .sum_mantissa(sum_mantissa)        
+    );
+
+    // Wire internal in fp_lzd
+    wire [4:0] count_zero;
+    wire [23:0] mantissa = sum_mantissa[23:0];
+
+    fp_lzd u_lzd (
+        .mantissa(mantissa), 
+        .count_zero(count_zero)
+    );
+
+    // Wire internal in fp_normalize_add_sub
+    wire [7:0] exponent_norm;
+    wire [22:0] mantissa_norm;
+
+    fp_normalize_add_sub u_normalize (
+        .mantissa(sum_mantissa),
+        .exponent(exponent),
+        .shift_left(count_zero),
+        .exponent_norm(exponent_norm),
+        .mantissa_norm(mantissa_norm)
+    );
+
+    // Internal wire in fp_round_trunc
+    wire [7:0] exponent_out;
+    wire [22:0] mantissa_out;
+
+    fp_round_trunc u_round (
+        .exponent_in(exponent_norm),
+        .mantissa_in(mantissa_norm),
+        .exponent_out(exponent_out),
+        .mantissa_out(mantissa_out)
+    );
+
+    // Wire internal in fp_pack
+    wire result_sign;
+    // Sum_mantissa = 0, choose sign = +0;
+    assign result_sign = (sum_mantissa == 25'd0) ? 1'b0 : A_sign;
+    wire [31:0] result_pack;
+
+    fp_pack u_pack (
+        .sign(result_sign),
+        .exponent(exponent_out),
+        .fraction(mantissa_out),
+        .result(result_pack)
+    );
+
+    always @ (*) begin
+        if(special_valid) begin
+            result = special_result;
+        end
+        else begin
+            result = result_pack;
+        end
+    end
 
 endmodule
