@@ -17,11 +17,16 @@ module fp_normalize_add_sub(
 
         //Case 2: Carry-out after addition
         else if(mantissa[24]) begin
-            //shift right 1 bit, take mantissa from 10.xxxx to 1.xxxx
-            mantissa_norm = mantissa[23:1];//remove bit[0]
-            // Right shift by one to restore normalized form (10.x -> 1.0x),
-            // therefore increment the exponent by one.
-            exponent_norm = (exponent < 8'hFF) ? exponent + 1'b1 : 8'hFF;
+           // Carry-out: shift phai 1 bit, tang exponent len 1
+            if (exponent == 8'hFE || exponent == 8'hFF) begin
+                // Exponent sau khi +1 se cham/vuot 0xFF -> saturate thanh Infinity
+                exponent_norm = 8'hFF;
+                mantissa_norm = 23'b0;
+            end
+            else begin
+                mantissa_norm = mantissa[23:1];
+                exponent_norm = exponent + 1'b1;
+            end
         end
         //Case 3: Underflow and shift left count (lzd)
         else if(exponent > shift_left) begin
