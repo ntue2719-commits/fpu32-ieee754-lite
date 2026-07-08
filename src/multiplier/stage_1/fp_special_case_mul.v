@@ -1,4 +1,4 @@
-module special_case(
+module fp_special_case_mul(
     input  [7:0] exponent_A,
     input  [22:0] fraction_A,
 
@@ -15,28 +15,16 @@ module special_case(
     output B_nan
 );
 
-assign A_zero =
-        (exponent_A == 8'd0) &&
-        (fraction_A == 23'd0);
+assign A_zero = (exponent_A == 8'd0) && (fraction_A == 23'd0);
 
-assign B_zero =
-        (exponent_B == 8'd0) &&
-        (fraction_B == 23'd0);
+assign B_zero = (exponent_B == 8'd0) && (fraction_B == 23'd0);
 
-assign A_inf =
-        (exponent_A == 8'hFF) &&
-        (fraction_A == 23'd0);
+assign A_inf = (exponent_A == 8'hFF) && (fraction_A == 23'd0);
 
-assign B_inf =
-        (exponent_B == 8'hFF) &&
-        (fraction_B == 23'd0);
+assign B_inf = (exponent_B == 8'hFF) && (fraction_B == 23'd0);
 
-assign A_nan =
-        (exponent_A == 8'hFF) &&
-        (fraction_A != 23'd0);
+assign A_nan = (exponent_A == 8'hFF) && (fraction_A != 23'd0);
 
-assign B_nan =
-        (exponent_B == 8'hFF) &&
-        (fraction_B != 23'd0);
+assign B_nan = (exponent_B == 8'hFF) && (fraction_B != 23'd0);
 
 endmodule
