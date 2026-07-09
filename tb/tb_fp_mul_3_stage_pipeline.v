@@ -25,6 +25,8 @@ module tb_fp_mul_3_stage_pipeline;
     always #5 clk = ~clk;
 
     initial begin
+        $dumpfile("fp_mul_pipe3.vcd");
+        $dumpvars(0, tb_fp_mul_3_stage_pipeline);
         fd = $fopen("verification/Multiplier/mul_vectors.txt","r");
         log_fd = $fopen("results_mul_pipe3.log","w");
 
