@@ -2,50 +2,52 @@
 
 module tb_fp_mul_nonpipeline;
 
-reg [31:0] A;
-reg [31:0] B;
+    reg  [31:0] A, B;
+    wire [31:0] result;
 
-wire [31:0] result;
+    integer fd, log_fd, idx;
 
-fp_multiplier_nonpipeline dut(
-    .A(A),
-    .B(B),
-    .result(result)
-);
+    reg [31:0] exp_val;
+    reg [8*32-1:0] cat;
 
-initial begin
-    $dumpfile("fp_mul_nonpipeline.vcd");
-    $dumpvars(0,tb_fp_mul_nonpipeline);
+    fp_multiplier_nonpipeline dut (
+        .A(A),
+        .B(B),
+        .result(result)
+    );
 
-    $display("===== NON PIPELINE MULTIPLIER =====");
+    initial begin
+        fd = $fopen("verification/Multiplier/mul_vectors.txt","r");
+        log_fd = $fopen("results_mul_nopipe.log","w");
 
-    A = 32'h3F800000; //1.0
-    B = 32'h3F800000; //1.0
-    #10;
-    $display("1.0 * 1.0 = %h",result);
+        idx = 0;
 
-    A = 32'h40000000; //2.0
-    B = 32'h40000000; //2.0
-    #10;
-    $display("2.0 * 2.0 = %h",result);
+        while(!$feof(fd)) begin
+            if($fscanf(fd,"%h %h %h %s\n",
+                A,B,exp_val,cat) == 4) begin
 
-    A = 32'h40600000; //3.5
-    B = 32'h40000000; //2.0
-    #10;
-    $display("3.5 * 2.0 = %h",result);
+                #10;
 
-    A = 32'hC0000000; //-2.0
-    B = 32'h40800000; //4.0
-    #10;
-    $display("-2.0 * 4.0 = %h",result);
+                if(result === exp_val)
+                    $fdisplay(log_fd,
+                    "VEC %0d %0s PASS A=%08H B=%08H EXP=%08H GOT=%08H",
+                    idx,cat,A,B,exp_val,result);
 
-    A = 32'h00000000; //0
-    B = 32'h40A00000; //5
-    #10;
-    $display("0 * 5 = %h",result);
+                else
+                    $fdisplay(log_fd,
+                    "VEC %0d %0s FAIL A=%08H B=%08H EXP=%08H GOT=%08H",
+                    idx,cat,A,B,exp_val,result);
 
-    #20;
-    $finish;
-end
+                idx = idx + 1;
+            end
+        end
+
+        $display("Done : %0d vectors",idx);
+
+        $fclose(fd);
+        $fclose(log_fd);
+
+        $finish;
+    end
 
 endmodule

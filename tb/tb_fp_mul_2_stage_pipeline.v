@@ -2,58 +2,73 @@
 
 module tb_fp_mul_2_stage_pipeline;
 
-reg clk;
-reg rst_n;
+    reg clk = 0;
+    reg rst_n = 0;
 
-reg [31:0] A;
-reg [31:0] B;
+    reg [31:0] A,B;
 
-wire [31:0] result;
+    wire [31:0] result;
 
-fp_multiplier_2_stage_pipeline dut(
-    .clk(clk),
-    .rst_n(rst_n),
-    .A(A),
-    .B(B),
-    .result(result)
-);
+    integer fd,log_fd,idx;
 
-always #5 clk = ~clk;
+    reg [31:0] exp_val;
+    reg [8*32-1:0] cat;
 
-initial begin
-    clk = 0;
-    rst_n = 0;
+    fp_multiplier_2_stage_pipeline dut(
+        .clk(clk),
+        .rst_n(rst_n),
+        .A(A),
+        .B(B),
+        .result(result)
+    );
 
-    $dumpfile("fp_mul_pipe2.vcd");
-    $dumpvars(0,tb_fp_mul_pipe2);
+    always #5 clk = ~clk;
 
-    #20;
-    rst_n = 1;
+    initial begin
 
-    $display("===== PIPELINE 2 STAGE =====");
+        fd = $fopen("verification/Multiplier/mul_vectors.txt","r");
+        log_fd = $fopen("results_mul_pipe2.log","w");
 
-    A = 32'h3F800000;
-    B = 32'h3F800000;
-    #30;
-    $display("1.0 * 1.0 = %h",result);
+        A = 0;
+        B = 0;
+        idx = 0;
 
-    A = 32'h40000000;
-    B = 32'h40000000;
-    #30;
-    $display("2.0 * 2.0 = %h",result);
+        repeat(5) @(posedge clk);
 
-    A = 32'h40600000;
-    B = 32'h40000000;
-    #30;
-    $display("3.5 * 2.0 = %h",result);
+        rst_n = 1;
 
-    A = 32'hC0000000;
-    B = 32'h40800000;
-    #30;
-    $display("-2.0 * 4.0 = %h",result);
+        @(posedge clk);
 
-    #50;
-    $finish;
-end
+        while(!$feof(fd)) begin
+            if($fscanf(fd,"%h %h %h %s\n",
+                A,B,exp_val,cat) == 4) begin
+
+                @(posedge clk);
+
+                repeat(2) @(posedge clk);
+
+                #1;
+
+                if(result === exp_val)
+                    $fdisplay(log_fd,
+                    "VEC %0d %0s PASS A=%08H B=%08H EXP=%08H GOT=%08H",
+                    idx,cat,A,B,exp_val,result);
+
+                else
+                    $fdisplay(log_fd,
+                    "VEC %0d %0s FAIL A=%08H B=%08H EXP=%08H GOT=%08H",
+                    idx,cat,A,B,exp_val,result);
+
+                idx = idx + 1;
+            end
+        end
+
+        $display("Done : %0d vectors",idx);
+
+        $fclose(fd);
+        $fclose(log_fd);
+
+        $finish;
+    end
 
 endmodule
