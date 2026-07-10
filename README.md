@@ -86,7 +86,7 @@ The FPU consists of two independent arithmetic units — a floating-point adder-
 
 
 <p align="center">
-  <img src="doc/images/Architecture_adder_subtracter_unit.png" width="300">
+  <img src="doc/images/Architecture_adder_subtracter_unit.png" width="800">
 </p>
 
 ```text
@@ -124,7 +124,7 @@ Result
 
 
 <p align="center">
-  <img src="doc/images/Architecture_multiplier_unit.png" width="900">
+  <img src="doc/images/Architecture_multiplier_unit.png" width="800">
 </p>
 
 
