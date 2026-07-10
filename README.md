@@ -219,12 +219,12 @@ src/
 │   ├── 2_stage_pipeline_top/
 │   ├── 3_stage_pipeline_top/
 │   │
-│   ├── Stage 1/
+│   ├── Stage1/
 │   │   ├── fp_special_case_add_sub.v
 │   │   ├── fp_compare_mag.v
 │   │   └── fp_align.v
 │   │
-│   └── Stage 2/
+│   └── Stage2/
 │       ├── fp_add_sub_core.v
 │       ├── fp_lzd.v
 │       └── fp_normalize_add.v
@@ -234,15 +234,15 @@ src/
 │   ├── 2_stage_pipeline_top/
 │   ├── 3_stage_pipeline_top/
 │   │
-│   ├── Stage 1/
+│   ├── Stage1/
 │   │   ├── fp_special_case_mul.v
 │   │   └── fp_mul_exp.v
 │   │
-│   └── Stage 2/
+│   └── Stage2/
 │       ├── fp_mul_mantissa.v
 │       └── fp_normalize_mul.v
 │
-├── Stage3_common/
+├── common/
 │   ├── fp_defs.v
 │   ├── fp_round_trunc.v
 │   └── fp_pack.v
