@@ -231,22 +231,9 @@ Clock Constraint
 
 ---
 
-# Citation
-
-If you use this project in academic work, please cite it appropriately after publication.
-
----
 
 # License
 
 MIT License
 
 ---
-
-# Author
-
-Wis
-
-Integrated Circuit Design Student
-
-Ho Chi Minh City, Vietnam
