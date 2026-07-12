@@ -256,7 +256,7 @@ Both `fpu_add_sub.v` and `fpu_mul.v` are each synthesized in three pipeline conf
 
 | Unit | Configuration | LUT | FF | DSP | WNS|
 |------|---------------|-----|----|----|----|
-| Adder-subtractor | Non-pipeline |  |  |   | |
+| Adder-subtractor | Non-pipeline | 447 | 97 | 0| 0.757 |
 | Adder-subtractor | 2-stage |  |  |   | |
 | Adder-subtractor | 3-stage | |  |  | |
 | Multiplier | Non-pipeline | |  |  |  |
