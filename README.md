@@ -254,14 +254,14 @@ src/
 
 Both `fpu_add_sub.v` and `fpu_mul.v` are each synthesized in three pipeline configurations — Non-pipeline, 2-stage, and 3-stage — using the same methodology, so results can be compared side by side across both units.
 
-| Unit | Configuration | LUT | FF | Fmax |
-|------|---------------|-----|----|----|
-| Adder-subtractor | Non-pipeline |  |  |   |
-| Adder-subtractor | 2-stage |  |  |   |
-| Adder-subtractor | 3-stage | |  |  |
-| Multiplier | Non-pipeline | |  |  |
-| Multiplier | 2-stage | |  |  |
-| Multiplier | 3-stage |  |  |  |
+| Unit | Configuration | LUT | FF | DSP | WNS|
+|------|---------------|-----|----|----|----|
+| Adder-subtractor | Non-pipeline |  |  |   | |
+| Adder-subtractor | 2-stage |  |  |   | |
+| Adder-subtractor | 3-stage | |  |  | |
+| Multiplier | Non-pipeline | |  |  |  |
+| Multiplier | 2-stage | |  |  |  |
+| Multiplier | 3-stage |  |  |  |  |
 
 > Numbers above are illustrative for the adder-subtractor; replace with real synthesis results once available. Multiplier figures are pending — `fpu_mul.v` currently has a fixed 2-stage implementation and needs non-pipeline and 3-stage variants added to complete the comparison.
 
