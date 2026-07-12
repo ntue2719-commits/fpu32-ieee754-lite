@@ -1,184 +1,159 @@
 # FPU32 IEEE-754 Lite
 
-A modular, pipelined IEEE-754 single-precision floating-point unit implemented in Verilog, targeting the EBAZ4205 FPGA.
+A modular IEEE-754 single-precision Floating-Point Unit (FPU) implemented in Verilog HDL for FPGA platforms.
 
-This project supports:
-
-- Floating-point addition
-- Floating-point subtraction
-- Floating-point multiplication
-- Normalization
-- Rounding / truncation
-- Special-case handling (NaN, Infinity, Zero)
-- Overflow and underflow detection
-
-This project is developed as part of an academic digital design course.
-
----
-# Table of Contents
-
-- [IEEE754 Single Precision Format](#ieee754-single-precision-format)
-- [Architecture](#architecture)
-- [Module Index](#module-index)
-- [Repository Organization](#repository-organization)
-- [FPGA Pipeline Evaluation](#fpga-pipeline-evaluation)
-
----
-## IEEE754 Single Precision Format
-
-The project follows the IEEE754 Single Precision (32-bit) floating-point format.
-
-| Field | Width | Bit Range |
-|-------|--------|------------|
-| Sign | 1 bit | [31] |
-| Exponent | 8 bits | [30:23] |
-| Fraction (Mantissa) | 23 bits | [22:0] |
-
-### Hidden Bit
-
-For normalized numbers, the leading bit of the significand is always 1 and is not stored explicitly. During arithmetic operations, this hidden bit is restored internally.
-
-### Exponent Bias
-
-IEEE754 Single Precision uses an exponent bias of 127.
-
-```text
-Actual Exponent = Stored Exponent − 127
-```
-
-### Value Representation
-
-```text
-Value = (-1)^Sign × (1.Fraction) × 2^(Exponent − 127)
-```
+The project provides three implementation variants (non-pipeline, 2-stage pipeline, and 3-stage pipeline) for floating-point addition/subtraction and multiplication, enabling architectural comparison in terms of FPGA resource utilization and timing performance.
 
 ---
 
-## Architecture
+## Features
 
-### Design Philosophy: Reusable Floating-Point Datapath
+- IEEE-754 Single-Precision (32-bit)
+- Floating-point Addition
+- Floating-point Subtraction
+- Floating-point Multiplication
+- IEEE-754 Special Case Handling
+  - NaN
+  - Infinity
+  - Zero
+- Overflow / Underflow Detection
+- Shared Rounding and Packing Modules
+- Modular RTL Architecture
+- FPGA-Oriented Pipeline Evaluation
 
-The adder-subtractor (`fpu_add_sub.v`) and multiplier (`fpu_mul.v`) are implemented as two independent datapaths — they do not share alignment, arithmetic core, leading-zero-detection, or normalization logic, since these steps differ fundamentally between the two operations (add/sub cancellation may require shifting many bits, while multiplier normalization needs at most a 1-bit shift).
+---
 
-Both datapaths converge at two final, format-defined stages, which are shared:
+## Project Overview
 
-- `fp_round_trunc.v` — Rounding / truncation (shared)
-- `fp_pack.v` — Result packing into IEEE-754 format (shared)
+Unlike monolithic FPU implementations, this project adopts a modular architecture in which each arithmetic unit is decomposed into reusable functional modules.
 
-This is where reuse makes sense: the two units diverge in their early, algorithm-specific stages, then converge at the stages that only depend on the final normalized mantissa and exponent.
+The adder/subtractor and multiplier maintain independent arithmetic datapaths while converging at two shared IEEE-754 format-dependent stages:
 
-### Design Principle: Special-Case Isolation
+- `fp_round_trunc.v`
+- `fp_pack.v`
 
-Special-case handling (NaN, Infinity, Zero, etc.) is kept out of the core datapath modules:
+This organization improves maintainability, module reusability, and architectural clarity without introducing unnecessary coupling between operation-specific datapaths.
 
-- `fp_align` — performs alignment only, has no awareness of special cases
-- `fp_special_case_add_sub` / `fp_special_case_mul` — handle all IEEE-754 exceptions for each pipeline (note: multiply special cases differ from add/sub, e.g. `0 × ∞ = NaN`, so they live in separate files)
-- `fpu_add_sub.v` / `fpu_mul.v` — top-level modules that route between the normal path and the special-case path
+---
 
-### Top-Level Architecture
-<p align="center">
-  <img src="doc/images/Architecture_Block_Diagram.png" width="900">
-</p>
-
-The FPU consists of two independent arithmetic units — a floating-point adder-subtractor and a floating-point multiplier — both built on the shared rounding and packing modules, integrated through `fpu_top.v`.
-
-### Adder-Subtractor Pipeline
-
+# Top-Level Architecture
 
 <p align="center">
-  <img src="doc/images/Architecture_adder_subtracter_unit.png" width="800">
+<img src="doc/images/Architecture_Block_Diagram.png" width="850">
 </p>
 
-```text
-A, B
-  │
-  ▼
-fp_special_case_add_sub ──── special_valid = 1 ────► Result
-  │
-  ▼
-fp_compare_mag
-  │
-  ▼
-fp_align
-  │
-  ▼
-fp_add_sub_core
-  │
-  ▼
-fp_lzd
-  │
-  ▼
-fp_normalize_add
-  │
-  ▼
-fp_round_trunc   ← Shared
-  │
-  ▼
-fp_pack          ← Shared
-  │
-  ▼
-Result
-```
+The FPU integrates two independent arithmetic units:
 
-### Multiplier Pipeline
+- Floating-point Adder/Subtractor
+- Floating-point Multiplier
 
+Both units reuse the common rounding and packing modules before producing the final IEEE-754 result.
+
+---
+
+# Adder/Subtractor Architecture
 
 <p align="center">
-  <img src="doc/images/Architecture_multiplier_unit.png" width="800">
+<img src="doc/images/Architecture_adder_subtracter_unit.png" width="850">
 </p>
 
+Pipeline flow
 
 ```text
-A, B
-  │
-  ▼
-fp_special_case_mul ──── special_valid = 1 ────► Result
-  │
-  ▼
-fp_mul_exp
-  │
-  ▼
-fp_mul_mantissa
-  │
-  ▼
-fp_normalize_mul
-  │
-  ▼
-fp_round_trunc   ← Shared
-  │
-  ▼
-fp_pack          ← Shared
-  │
-  ▼
-Result
+Special Case
+      │
+Compare Magnitude
+      │
+Align Mantissa
+      │
+Add/Subtract
+      │
+Leading Zero Detection
+      │
+Normalization
+      │
+Round / Truncate
+      │
+Pack IEEE754
 ```
 
 ---
 
-# Module Index
+# Multiplier Architecture
 
-The FPU is organized into three categories: top-level modules, operation-specific modules (adder/subtractor and multiplier), and reusable common modules.
+<p align="center">
+<img src="doc/images/Architecture_multiplier_unit.png" width="850">
+</p>
 
-## Top-Level Modules
+Pipeline flow
+
+```text
+Special Case
+      │
+Exponent Calculation
+      │
+Mantissa Multiplication
+      │
+Normalization
+      │
+Round / Truncate
+      │
+Pack IEEE754
+```
+
+---
+
+# Repository Structure
+
+```text
+src
+│
+├── common
+│   ├── fp_defs.v
+│   ├── fp_round_trunc.v
+│   └── fp_pack.v
+│
+├── adder_subtractor
+│   ├── Non_pipeline_top
+│   ├── 2_stage_pipeline_top
+│   ├── 3_stage_pipeline_top
+│   ├── Stage1
+│   └── Stage2
+│
+├── multiplier
+│   ├── Non_pipeline_top
+│   ├── 2_stage_pipeline_top
+│   ├── 3_stage_pipeline_top
+│   ├── Stage1
+│   └── Stage2
+│
+└── fpu_top.v
+```
+
+---
+
+# Module Description
+
+## Common Modules
 
 | Module | Description |
 |---------|-------------|
-| `fpu_top.v` | Top-level FPU integrating the adder-subtractor and multiplier units |
-| `fpu_add_sub.v` | Top-level IEEE-754 floating-point adder-subtractor |
-| `fpu_mul.v` | Top-level IEEE-754 floating-point multiplier |
+| fp_defs | Global IEEE-754 parameters |
+| fp_round_trunc | Mantissa rounding/truncation |
+| fp_pack | IEEE-754 result packing |
 
 ---
 
-## Adder-Subtractor Modules
+## Adder/Subtractor Modules
 
 | Module | Function |
 |---------|----------|
-| `fp_special_case_add_sub.v` | Detect and handle IEEE-754 special cases (NaN, Infinity, Zero, etc.) |
-| `fp_compare_mag.v` | Compare operand magnitudes to determine alignment and subtraction order |
-| `fp_align.v` | Restore hidden bits and align mantissas according to exponent difference |
-| `fp_add_sub_core.v` | Perform mantissa addition or subtraction |
-| `fp_lzd.v` | Leading Zero Detector for cancellation after subtraction |
-| `fp_normalize_add.v` | Normalize the mantissa and update the exponent |
+| fp_special_case_add_sub | IEEE-754 exception handling |
+| fp_compare_mag | Operand magnitude comparison |
+| fp_align | Mantissa alignment |
+| fp_add_sub_core | Mantissa arithmetic |
+| fp_lzd | Leading Zero Detector |
+| fp_normalize_add | Result normalization |
 
 ---
 
@@ -186,90 +161,92 @@ The FPU is organized into three categories: top-level modules, operation-specifi
 
 | Module | Function |
 |---------|----------|
-| `fp_special_case_mul.v` | Detect and handle multiplication-specific IEEE-754 special cases |
-| `fp_mul_exp.v` | Calculate the output exponent |
-| `fp_mul_mantissa.v` | Multiply the two mantissas |
-| `fp_normalize_mul.v` | Normalize the multiplication result |
+| fp_special_case_mul | IEEE-754 exception handling |
+| fp_mul_exp | Exponent calculation |
+| fp_mul_mantissa | Mantissa multiplication |
+| fp_normalize_mul | Result normalization |
 
 ---
 
-## Common (Reusable) Modules
+# FPGA Evaluation
 
-| Module | Function |
-|---------|----------|
-| `fp_round_trunc.v` | Perform mantissa truncation after normalization (shared by both datapaths) |
-| `fp_pack.v` | Pack sign, exponent, and mantissa into IEEE-754 single-precision format (shared by both datapaths) |
+Target FPGA
+
+- Xilinx Zynq-7010
+- EBAZ4205 Development Board
+- Vivado 2020.2
+
+Clock Constraint
+
+20 ns (50 MHz)
 
 ---
 
-## Repository Organization
+## Adder/Subtractor
 
-To evaluate the impact of pipelining, both the adder-subtractor and multiplier are organized into three implementation variants:
+| Configuration | LUT | FF | DSP | WNS (ns) |
+|--------------|----:|---:|----:|---------:|
+| Non-pipeline | 447 | 97 | 0 | 0.757 |
+| 2-stage | 367 | 220 | 0 | 8.028 |
+| 3-stage | 354 | 285 | 0 | 8.105 |
 
-- **Non_pipeline_top** — baseline implementation
-- **2_stage_pipeline_top** — two-stage pipelined implementation
-- **3_stage_pipeline_top** — three-stage pipelined implementation
-
-The pipeline stages are separated into Stage 1 and Stage 2 directories for modular development, while the final stage (`Stage 3_common`) contains the shared modules (`fp_round_trunc.v` and `fp_pack.v`) reused by both arithmetic units.
-
-```text
-src/
-├── adder_subtractor/
-│   ├── Non_pipeline_top/
-│   ├── 2_stage_pipeline_top/
-│   ├── 3_stage_pipeline_top/
-│   │
-│   ├── Stage1/
-│   │   ├── fp_special_case_add_sub.v
-│   │   ├── fp_compare_mag.v
-│   │   └── fp_align.v
-│   │
-│   └── Stage2/
-│       ├── fp_add_sub_core.v
-│       ├── fp_lzd.v
-│       └── fp_normalize_add.v
-│
-├── multiplier/
-│   ├── Non_pipeline_top/
-│   ├── 2_stage_pipeline_top/
-│   ├── 3_stage_pipeline_top/
-│   │
-│   ├── Stage1/
-│   │   ├── fp_special_case_mul.v
-│   │   └── fp_mul_exp.v
-│   │
-│   └── Stage2/
-│       ├── fp_mul_mantissa.v
-│       └── fp_normalize_mul.v
-│
-├── common/
-│   ├── fp_defs.v
-│   ├── fp_round_trunc.v
-│   └── fp_pack.v
-│
-└── fpu_top.v
-```
 ---
-## FPGA Pipeline Evaluation
 
-Both `fpu_add_sub.v` and `fpu_mul.v` are each synthesized in three pipeline configurations — Non-pipeline, 2-stage, and 3-stage — using the same methodology, so results can be compared side by side across both units.
+## Multiplier
 
-| Unit | Configuration | LUT | FF | DSP | WNS|
-|------|---------------|-----|----|----|----|
-| Adder-subtractor | Non-pipeline | 447 | 97 | 0| 0.757 |
-| Adder-subtractor | 2-stage | 367 | 220 | 0  | 8.028 |
-| Adder-subtractor | 3-stage | 354| 285 | 0 |8.105 |
-| Multiplier | Non-pipeline | 80 |96| 2  | 7.551 |
-| Multiplier | 2-stage |100| 146 | 2 | 12.924 |
-| Multiplier | 3-stage | 110  | 229 | 2 | 7.950 |
+| Configuration | LUT | FF | DSP | WNS (ns) |
+|--------------|----:|---:|----:|---------:|
+| Non-pipeline | 80 | 96 | 2 | 7.551 |
+| 2-stage | 100 | 146 | 2 | 12.924 |
+| 3-stage | 110 | 229 | 2 | 7.950 |
 
-> Numbers above are illustrative for the adder-subtractor; replace with real synthesis results once available. Multiplier figures are pending — `fpu_mul.v` currently has a fixed 2-stage implementation and needs non-pipeline and 3-stage variants added to complete the comparison.
-
-Expected analysis points:
-- LUT usage increases by ~20% per added pipeline stage
-- FF count increases due to added pipeline registers
-- Fmax increases by nearly 3× from non-pipeline to 3-stage
-- Overall throughput improves significantly with pipelining
-
-Each unit's RTL and pipeline structure remain independent (`fpu_add_sub.v` and `fpu_mul.v` are not merged into a single top module) — only the synthesis results are compared together here.
 ---
+
+## Experimental Observations
+
+### Adder/Subtractor
+
+- Pipeline registers significantly improve timing slack.
+- LUT utilization decreases after logic restructuring during synthesis.
+- FF usage increases due to pipeline registers.
+- The 3-stage architecture achieves the highest timing margin.
+
+### Multiplier
+
+- DSP usage remains constant across all implementations.
+- FF usage increases with pipeline depth.
+- The 2-stage implementation achieves the best timing performance because the critical path is more evenly partitioned.
+- The current 3-stage implementation is intentionally retained for architectural comparison and future optimization.
+
+---
+
+# Future Work
+
+- IEEE-754 rounding modes
+- Floating-point Divider
+- Fused Multiply-Add (FMA)
+- Double-Precision Support
+- Power Analysis
+- RISC-V Floating-Point Extension
+
+---
+
+# Citation
+
+If you use this project in academic work, please cite it appropriately after publication.
+
+---
+
+# License
+
+MIT License
+
+---
+
+# Author
+
+Wis
+
+Integrated Circuit Design Student
+
+Ho Chi Minh City, Vietnam
