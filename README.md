@@ -259,8 +259,8 @@ Both `fpu_add_sub.v` and `fpu_mul.v` are each synthesized in three pipeline conf
 | Adder-subtractor | Non-pipeline | 447 | 97 | 0| 0.757 |
 | Adder-subtractor | 2-stage | 367 | 220 | 0  | 8.028 |
 | Adder-subtractor | 3-stage | 354| 285 | 0 |8.105 |
-| Multiplier | Non-pipeline | |  |  |  |
-| Multiplier | 2-stage | |  |  |  |
+| Multiplier | Non-pipeline | 80 |96| 2  | 7.551 |
+| Multiplier | 2-stage |100| 146 | 2 | 12.924 |
 | Multiplier | 3-stage |  |  |  |  |
 
 > Numbers above are illustrative for the adder-subtractor; replace with real synthesis results once available. Multiplier figures are pending — `fpu_mul.v` currently has a fixed 2-stage implementation and needs non-pipeline and 3-stage variants added to complete the comparison.
