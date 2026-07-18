@@ -19,8 +19,8 @@ module tb_fp_mul_nonpipeline;
     initial begin
         $dumpfile("fp_mul_nonpipeline.vcd");
         $dumpvars(0, tb_fp_mul_nonpipeline);
-        fd = $fopen("verification/Multiplier/mul_vectors.txt","r");
-        log_fd = $fopen("results_mul_nopipe.log","w");
+        fd = $fopen("verification/mul/mul_vectors.txt","r");
+        log_fd = $fopen("verification/mul/results_non_pipeline.log","w");
 
         idx = 0;
 
