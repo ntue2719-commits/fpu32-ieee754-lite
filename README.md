@@ -184,21 +184,21 @@ Clock Constraint
 
 ## Adder/Subtractor
 
-| Configuration | LUT | FF | DSP | WNS (ns) |
-|--------------|----:|---:|----:|---------:|
-| Non-pipeline | 447 | 97 | 0 | 0.757 |
-| 2-stage | 367 | 220 | 0 | 8.028 |
-| 3-stage | 354 | 285 | 0 | 8.105 |
+| Configuration | LUT | FF | DSP | WNS (ns) | Fmax (MHz) |
+|--------------|----:|---:|----:|---------:|---------:|
+| Non-pipeline | 447 | 97 | 0 | 0.757 |51.97|
+| 2-stage | 367 | 220 | 0 | 8.028 |83.53|
+| 3-stage | 354 | 285 | 0 | 8.105 |84.07|
 
 ---
 
 ## Multiplier
 
-| Configuration | LUT | FF | DSP | WNS (ns) |
-|--------------|----:|---:|----:|---------:|
-| Non-pipeline | 80 | 96 | 2 | 7.551 |
-| 2-stage | 100 | 146 | 2 | 12.924 |
-| 3-stage | 110 | 229 | 2 | 7.950 |
+| Configuration | LUT | FF | DSP | WNS (ns) | Fmax (MHz) |
+|--------------|----:|---:|----:|---------:|--------:|
+| Non-pipeline | 80 | 96 | 2 | 7.551 |80.33|
+| 2-stage | 100 | 146 | 2 | 12.924 |141.32|
+| 3-stage | 110 | 229 | 2 | 7.950 |82.99
 
 ---
 
